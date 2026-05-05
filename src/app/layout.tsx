@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fastbite.vercel.app"),
+  metadataBase: new URL("https://fastbite-restaurant.vercel.app"),
   title: {
     default: "FastBite Restaurant | Fresh Fast Food, Delivery & Online Orders",
     template: "%s | FastBite Restaurant",
@@ -42,11 +42,11 @@ export const metadata: Metadata = {
     title: "FastBite Restaurant | Fresh Fast Food & Online Orders",
     description:
       "Explore our menu, discover fresh offers, and order your favorite meals online.",
-    url: "https://fastbite.vercel.app",
+    url: "https://fastbite-restaurant.vercel.app",
     siteName: "FastBite Restaurant",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "FastBite Restaurant food menu and online ordering",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title: "FastBite Restaurant | Fresh Fast Food & Online Orders",
     description:
       "Order burgers, pizza, chicken, sides, drinks, and fresh restaurant offers online.",
-    images: ["/og-image.jpg"],
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
