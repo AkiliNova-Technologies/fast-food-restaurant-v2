@@ -30,16 +30,16 @@ export function BestProductsSection() {
   return (
     <section
       id="featured"
-      className="bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      className="bg-white px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20"
     >
       <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-orange-500 sm:text-sm">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-orange-500 sm:text-sm sm:tracking-[0.3em]">
               Best Sellers
             </p>
 
-            <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl lg:text-5xl">
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl lg:text-5xl">
               Customer favorites, cooked fresh every day.
             </h2>
           </div>
@@ -47,39 +47,36 @@ export function BestProductsSection() {
           <Button
             asChild
             variant="outline"
-            className="h-[48px] w-fit rounded-full border-orange-200 px-6 font-bold hover:bg-orange-50"
+            className="h-11 w-fit rounded-full border-orange-200 bg-orange-50 px-5 text-sm font-bold text-red-600 hover:bg-red-600 hover:text-white sm:h-12"
           >
-            <Link
-            href="/menu"
-            className="flex w-fit items-center gap-2 rounded-full bg-orange-50 px-5 py-3 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-white"
-          >
-            View full menu
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+            <Link href="/menu">
+              View full menu
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
 
         {loading ? (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:mt-10 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-[420px] animate-pulse rounded-[2rem] bg-orange-50"
+                className="h-[360px] animate-pulse rounded-[1.5rem] bg-orange-50 sm:h-[400px] sm:rounded-[2rem]"
               />
             ))}
           </div>
         ) : featuredProducts.length > 0 ? (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:mt-12 xl:grid-cols-4">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:mt-10 lg:gap-5 xl:grid-cols-4">
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <div className="mt-10 rounded-[2rem] border border-orange-100 bg-orange-50 p-8 text-center">
-            <h3 className="text-2xl font-bold text-stone-950">
+          <div className="mt-8 rounded-[1.5rem] border border-orange-100 bg-orange-50 p-6 text-center sm:rounded-[2rem] sm:p-8">
+            <h3 className="text-xl font-bold text-stone-950 sm:text-2xl">
               No featured meals yet
             </h3>
-            <p className="mt-2 text-stone-500">
+            <p className="mt-2 text-sm text-stone-500 sm:text-base">
               Mark products as featured from the dashboard to show them here.
             </p>
           </div>

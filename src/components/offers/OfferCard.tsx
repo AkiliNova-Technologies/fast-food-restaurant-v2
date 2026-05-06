@@ -23,23 +23,24 @@ function formatDate(value?: string | null) {
 
 export function OfferCard({ offer }: OfferCardProps) {
   return (
-    <Card className="group overflow-hidden rounded-[2rem] border-orange-100 bg-white py-0 pb-6 transition hover:-translate-y-1 hover:shadow-xl">
-      <div className="relative h-72 overflow-hidden bg-orange-50">
+    <Card className="group overflow-hidden rounded-[1.5rem] border border-orange-100 bg-white py-0 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[2rem]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-orange-50 sm:aspect-[16/10]">
         <Image
           src={getImageUrl(offer.image)}
           alt={offer.title}
           fill
           unoptimized
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover transition duration-500 group-hover:scale-110"
         />
 
-        <div className="absolute left-4 top-4 rounded-full bg-red-600 px-4 py-2 text-sm font-bold text-white">
-          {offer.discount_percent}% OFF
+        <div className="absolute left-3 top-3 rounded-full bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg sm:left-4 sm:top-4 sm:px-4 sm:py-2 sm:text-sm">
+          {offer.discountPercent ?? offer.discount_percent ?? 0}% OFF
         </div>
       </div>
 
-      <CardContent className="px-6">
-        <div className="flex flex-wrap gap-3">
+      <CardContent className="space-y-4 px-4 pb-5 sm:px-6 sm:pb-6">
+        <div className="flex flex-wrap gap-2">
           <div className="flex items-center gap-2 rounded-full bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700">
             <Tag className="h-4 w-4" />
             Special Deal
@@ -47,19 +48,23 @@ export function OfferCard({ offer }: OfferCardProps) {
 
           <div className="flex items-center gap-2 rounded-full bg-orange-50 px-3 py-2 text-xs font-bold text-stone-600">
             <CalendarDays className="h-4 w-4" />
-            Until {formatDate(offer.expiresAt)}
+            Until {formatDate(offer.expiresAt ?? offer.expires_at)}
           </div>
         </div>
 
-        <h2 className="mt-5 text-2xl font-bold leading-tight text-stone-950">
-          {offer.title}
-        </h2>
+        <div>
+          <h2 className="line-clamp-2 text-xl font-bold leading-tight text-stone-950 sm:text-2xl">
+            {offer.title}
+          </h2>
 
-        <p className="mt-3 leading-7 text-stone-500">{offer.description}</p>
+          <p className="mt-2 line-clamp-3 text-sm leading-6 text-stone-500 sm:text-base sm:leading-7">
+            {offer.description}
+          </p>
+        </div>
 
         <Button
           asChild
-          className="mt-6 rounded-full bg-stone-950 px-6 text-white hover:bg-red-600"
+          className="h-11 w-full rounded-full bg-stone-950 px-5 text-sm font-bold text-white hover:bg-red-600 sm:w-fit"
         >
           <Link href="/menu">
             Order Deal

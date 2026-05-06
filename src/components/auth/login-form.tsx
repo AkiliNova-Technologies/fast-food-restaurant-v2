@@ -14,8 +14,14 @@ import { Label } from "@/components/ui/label";
 export function LoginForm() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("admin@restaurant.com");
-  const [password, setPassword] = useState("admin12345");
+  const [email, setEmail] = useState(
+    process.env.NODE_ENV === "development" ? "admin@restaurant.com" : "",
+  );
+
+  const [password, setPassword] = useState(
+    process.env.NODE_ENV === "development" ? "admin12345" : "",
+  );
+
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -25,13 +31,16 @@ export function LoginForm() {
     try {
       setSubmitting(true);
 
+      const trimmedEmail = email.trim().toLowerCase();
+
       await login({
-        email,
+        email: trimmedEmail,
         password,
       });
 
       toast.success("Login successful");
-      router.push("/dashboard");
+      router.replace("/dashboard");
+      router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {
@@ -40,7 +49,7 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md rounded-[2rem] border-orange-100 bg-white shadow-xl">
+    <Card className="w-full max-w-md rounded-[2rem] border-orange-100 bg-white">
       <CardContent className="p-8">
         <div className="mb-8 text-center">
           <div className="mx-auto flex size-14 items-center justify-center rounded-[1.5rem] bg-red-600 text-white">

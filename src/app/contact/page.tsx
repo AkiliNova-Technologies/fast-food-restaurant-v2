@@ -12,6 +12,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { sendContactMessage } from "@/services/api/public";
+import { Textarea } from "@/components/ui/textarea";
 
 const contactCards = [
   {
@@ -33,70 +34,69 @@ const contactCards = [
 
 export default function ContactPage() {
   const [name, setName] = useState("");
-const [contact, setContact] = useState("");
-const [message, setMessage] = useState("");
-const [loading, setLoading] = useState(false);
+  const [contact, setContact] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
 
-  if (!name || !message) {
-    toast.error("Please fill in required fields");
-    return;
+    if (!name || !message) {
+      toast.error("Please fill in required fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await sendContactMessage({
+        name,
+        email: contact.includes("@") ? contact : undefined,
+        phone: !contact.includes("@") ? contact : undefined,
+        message,
+      });
+
+      toast.success("Message sent successfully");
+
+      // reset
+      setName("");
+      setContact("");
+      setMessage("");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send message",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
-
-  try {
-    setLoading(true);
-
-    await sendContactMessage({
-      name,
-      email: contact.includes("@") ? contact : undefined,
-      phone: !contact.includes("@") ? contact : undefined,
-      message,
-    });
-
-    toast.success("Message sent successfully");
-
-    // reset
-    setName("");
-    setContact("");
-    setMessage("");
-  } catch (error) {
-    toast.error(
-      error instanceof Error ? error.message : "Failed to send message"
-    );
-  } finally {
-    setLoading(false);
-  }
-}
   return (
     <main className="bg-[#fff7ed]">
       <Navbar />
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-stone-950 px-4 pb-20 pt-32 text-white sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(248,113,113,0.35),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.3),transparent_35%)]" />
+      <section className="relative overflow-hidden bg-stone-950 px-4 pt-28 pb-14 text-white sm:px-6 lg:px-8 lg:pt-32 lg:pb-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(248,113,113,0.28),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.24),transparent_38%)]" />
 
         <div className="relative mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-orange-300 sm:text-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-orange-300 sm:text-sm">
             Contact Us
           </p>
 
-          <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mt-4 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl">
             Hungry? Let’s get your order moving.
           </h1>
 
-          <p className="mt-5 max-w-2xl text-sm leading-7 text-stone-300 sm:text-base sm:leading-8">
+          <p className="mt-4 max-w-2xl text-sm text-stone-300 sm:text-base">
             Reach out for delivery, reservations, bulk orders, event catering,
-            or feedback about your meal.
+            or feedback.
           </p>
         </div>
       </section>
 
       {/* CONTENT */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1fr_420px]">
-          
+        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           {/* LEFT SIDE */}
           <div>
             {/* CONTACT CARDS */}
@@ -104,9 +104,9 @@ async function handleSubmit(e: React.FormEvent) {
               {contactCards.map((item) => (
                 <Card
                   key={item.title}
-                  className="rounded-[2rem] bg-white "
+                  className="rounded-[1.5rem] border border-orange-100 bg-white sm:rounded-[2rem]"
                 >
-                  <CardContent className="p-5 sm:p-6">
+                  <CardContent className="p-4 sm:px-5">
                     <div className="grid h-11 w-11 place-items-center rounded-2xl bg-red-50 text-red-600">
                       <item.icon className="h-5 w-5" />
                     </div>
@@ -124,8 +124,8 @@ async function handleSubmit(e: React.FormEvent) {
             </div>
 
             {/* MAP */}
-            <Card className="mt-6 overflow-hidden rounded-[2rem] bg-white p-0">
-              <div className="grid min-h-[280px] place-items-center bg-orange-100 p-6 text-center sm:min-h-[360px]">
+            <Card className="mt-6 overflow-hidden rounded-[1.5rem] bg-white p-0 sm:rounded-[2rem]">
+              <div className="grid min-h-[240px] place-items-center bg-orange-100 p-6 text-center sm:min-h-[320px]">
                 <div>
                   <MapPin className="mx-auto h-10 w-10 text-red-600 sm:h-12 sm:w-12" />
 
@@ -153,7 +153,6 @@ async function handleSubmit(e: React.FormEvent) {
 
           {/* RIGHT SIDE */}
           <div className="space-y-6">
-            
             {/* HOURS */}
             <Card className="rounded-[2rem] border-orange-100 bg-white ">
               <CardContent className="p-5 sm:p-6">
@@ -172,7 +171,7 @@ async function handleSubmit(e: React.FormEvent) {
                   </div>
                 </div>
 
-                <div className="mt-5 space-y-2">
+                <div className="mt-4 space-y-2">
                   {[
                     ["Monday - Friday", "8:00 AM - 10:00 PM"],
                     ["Saturday", "9:00 AM - 11:00 PM"],
@@ -180,7 +179,7 @@ async function handleSubmit(e: React.FormEvent) {
                   ].map(([day, time]) => (
                     <div
                       key={day}
-                      className="flex justify-between rounded-xl bg-orange-50 px-4 py-3 text-sm font-bold"
+                      className="flex justify-between rounded-lg bg-orange-50 px-3 py-2 text-sm font-medium"
                     >
                       <span className="text-stone-600">{day}</span>
                       <span className="text-stone-950">{time}</span>
@@ -197,50 +196,52 @@ async function handleSubmit(e: React.FormEvent) {
                   Send a Message
                 </h2>
 
-                <form
-  className="space-y-4"
-  onSubmit={handleSubmit}
->
+                <form className="space-y-4 mt-4" onSubmit={handleSubmit}>
+
                   <Input
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-  placeholder="Your name"
-  className="h-[52px] rounded-full border-orange-100 bg-orange-50 px-5"
-/>
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your name"
+                    className="h-11 rounded-full bg-orange-50 px-4 text-sm"
+                  />
 
-<Input
-  value={contact}
-  onChange={(e) => setContact(e.target.value)}
-  placeholder="Email or phone number"
-  className="h-[52px] rounded-full border-orange-100 bg-orange-50 px-5"
-/>
+                  <Input
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    placeholder="Email or phone number"
+                    className="h-11 rounded-full bg-orange-50 px-4 text-sm"
+                  />
 
-<textarea
-  value={message}
-  onChange={(e) => setMessage(e.target.value)}
-  placeholder="How can we help?"
-  className="min-h-32 w-full rounded-[1.5rem] border border-orange-100 bg-orange-50 px-5 py-4 text-sm outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
-/>
+                  <Textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="How can we help?"
+                    className="min-h-28 w-full rounded-xl bg-orange-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-200"
+                  />
 
                   <Button
-  disabled={loading}
-  className="h-[52px] w-full rounded-full bg-red-600 text-base font-bold text-white hover:bg-red-700"
->
-  <Send className="mr-2 h-5 w-5" />
-  {loading ? "Sending..." : "Send Message"}
-</Button>
+                    disabled={loading}
+                    className="h-11 w-full rounded-full bg-red-600 text-sm font-bold text-white hover:bg-red-700"
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Sending...
+                      </span>
+                    ) : (
+                      "Send Message"
+                    )}
+                  </Button>
                 </form>
 
                 {/* WHATSAPP CTA */}
                 <Button
                   asChild
                   variant="outline"
-                  className="mt-4 h-[52px] w-full rounded-full border-green-500 text-green-600 hover:bg-green-50"
+                  className="mt-3 h-11 w-full rounded-full border-green-500 text-green-600 hover:bg-green-50"
                 >
-                  <Link
-                    href="https://wa.me/256700000000"
-                    target="_blank"
-                  >
+                  <Link href="https://wa.me/256700000000" target="_blank">
                     Chat on WhatsApp
                   </Link>
                 </Button>

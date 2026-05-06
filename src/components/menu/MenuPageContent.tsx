@@ -105,7 +105,7 @@ export function MenuPageContent() {
 
     if (activeCategory !== "All") {
       result = result.filter(
-        (product) => getProductCategoryName(product) === activeCategory
+        (product) => getProductCategoryName(product) === activeCategory,
       );
     }
 
@@ -175,10 +175,10 @@ export function MenuPageContent() {
               <span className="text-xs opacity-70">
                 {
                   products.filter((product) =>
-  category === "All"
-    ? true
-    : getProductCategoryName(product) === category
-).length
+                    category === "All"
+                      ? true
+                      : getProductCategoryName(product) === category,
+                  ).length
                 }
               </span>
             </button>
@@ -209,43 +209,43 @@ export function MenuPageContent() {
 
   return (
     <div className="bg-[#fff7ed]">
-      <section className="relative overflow-hidden bg-stone-950 px-4 pb-20 pt-32 text-white sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(248,113,113,0.35),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.3),transparent_35%)]" />
+      <section className="relative overflow-hidden bg-stone-950 px-4 pt-28 pb-14 text-white sm:px-6 lg:px-8 lg:pt-32 lg:pb-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(248,113,113,0.25),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.2),transparent_40%)]" />
 
         <div className="relative mx-auto max-w-7xl">
-          <Badge className="rounded-full bg-red-600 px-4 py-2 text-white hover:bg-red-600">
+          <Badge className="bg-red-600 text-white px-3 py-1 text-xs sm:text-sm">
             Freshly prepared daily
           </Badge>
 
-          <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mt-5 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl">
             Explore our menu
           </h1>
 
-          <p className="mt-5 max-w-2xl leading-8 text-stone-300">
+          <p className="mt-4 max-w-2xl text-sm text-stone-300 sm:text-base">
             Choose from smoky burgers, crispy chicken, loaded sides, pizza, and
-            fresh drinks prepared for fast delivery and bold flavor.
+            fresh drinks.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:grid lg:grid-cols-[260px_1fr] lg:gap-8 lg:px-8">
         <aside className="hidden lg:block">
-          <Card className="sticky top-28 rounded-[2rem] border-orange-100 bg-white">
-            <CardContent className="p-6">{filterContent}</CardContent>
-          </Card>
-        </aside>
+  <Card className="sticky top-24 rounded-2xl border border-orange-100 bg-white shadow-sm">
+    <CardContent className="p-5">{filterContent}</CardContent>
+  </Card>
+</aside>
 
         <div>
-          <div className="rounded-[4rem] border border-orange-100 bg-white p-4">
-            <div className="grid gap-4 md:grid-cols-[1fr_220px_auto] md:items-center">
+          <div className="rounded-2xl border border-orange-100 bg-white p-3 sm:p-4">
+  <div className="grid gap-3 md:grid-cols-[1fr_180px_auto] md:items-center">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400" />
                 <Input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search burgers, pizza, chicken..."
-                  className="h-[52px] rounded-full border-orange-100 bg-orange-50 pl-12 font-medium"
-                />
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  placeholder="Search meals..."
+  className="h-11 rounded-full bg-orange-50 pl-10 text-sm"
+/>
               </div>
 
               <Select value={sort} onValueChange={setSort}>
@@ -313,7 +313,7 @@ export function MenuPageContent() {
               </div>
             </div>
 
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:hidden">
               {categoryOptions.map((category) => (
                 <Button
                   key={category}
@@ -331,7 +331,7 @@ export function MenuPageContent() {
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-bold text-stone-500">
                 {loading
@@ -359,17 +359,17 @@ export function MenuPageContent() {
 
           {loading ? (
             <div
-              className={
-                viewMode === "grid"
-                  ? "mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
-                  : "mt-8 space-y-5"
-              }
-            >
+  className={
+    viewMode === "grid"
+      ? "mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      : "mt-6 space-y-4"
+  }
+>
               {Array.from({ length: 6 }).map((_, index) => (
                 <div
-                  key={index}
-                  className="h-[420px] animate-pulse rounded-[2rem] bg-white"
-                />
+  key={index}
+  className="h-[320px] animate-pulse rounded-xl bg-white sm:h-[360px]"
+/>
               ))}
             </div>
           ) : (

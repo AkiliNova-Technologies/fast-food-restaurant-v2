@@ -30,15 +30,15 @@ export function PromoSection() {
   return (
     <section
       id="offers"
-      className="bg-white px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
+      className="bg-white px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20"
     >
-      <div className="mx-auto grid max-w-7xl overflow-hidden rounded-[2rem] bg-stone-950 lg:grid-cols-2 lg:rounded-[3rem]">
-        <div className="flex flex-col justify-center p-6 text-white sm:p-10 lg:p-14">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-red-600 sm:h-14 sm:w-14">
-            <Percent className="h-6 w-6 sm:h-7 sm:w-7" />
+      <div className="mx-auto grid max-w-7xl overflow-hidden rounded-[1.75rem] bg-stone-950 shadow-2xl shadow-stone-950/10 sm:rounded-[2.25rem] lg:grid-cols-[0.95fr_1.05fr] lg:rounded-[3rem]">
+        <div className="order-2 flex flex-col justify-center p-6 text-white sm:p-8 md:p-10 lg:order-1 lg:p-14">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/30 sm:h-14 sm:w-14">
+            <Percent className="h-5 w-5 sm:h-7 sm:w-7" />
           </div>
 
-          <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-orange-300 sm:text-sm">
+          <p className="mt-5 text-xs font-bold uppercase tracking-[0.25em] text-orange-300 sm:mt-6 sm:text-sm sm:tracking-[0.3em]">
             Limited Offer
           </p>
 
@@ -53,7 +53,7 @@ export function PromoSection() {
           <Button
             asChild
             size="lg"
-            className="mt-6 h-[52px] w-fit rounded-full bg-red-600 px-6 font-bold text-white hover:bg-red-700 sm:mt-8 sm:px-8"
+            className="mt-6 h-12 w-full rounded-full bg-red-600 px-6 font-bold text-white hover:bg-red-700 sm:w-fit sm:h-[52px] sm:px-8"
           >
             <Link href="/menu">
               Order the Deal
@@ -62,7 +62,7 @@ export function PromoSection() {
           </Button>
         </div>
 
-        <div className="relative min-h-[240px] sm:min-h-[320px] lg:min-h-full">
+        <div className="relative order-1 min-h-[220px] sm:min-h-[300px] md:min-h-[360px] lg:order-2 lg:min-h-[520px]">
           <Image
             src={getImageUrl(offer.image)}
             alt={offer.title}
@@ -72,7 +72,7 @@ export function PromoSection() {
             className="object-cover"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent lg:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-950/45 via-transparent to-transparent lg:bg-gradient-to-r lg:from-stone-950/30 lg:to-transparent" />
         </div>
       </div>
     </section>
