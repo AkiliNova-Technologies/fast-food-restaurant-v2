@@ -1,21 +1,28 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Download, ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
-  getCartItems,
-  removeCartItem,
-  saveCartItems,
-  type CartItem,
-} from "@/lib/cart";
-import { getImageUrl } from "@/lib/image-url";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { clearCart, getCartItems, type CartItem } from "@/lib/cart";
+import { createPublicOrder } from "@/services/api/public";
+import { Textarea } from "@/components/ui/textarea";
+
+type PaymentMethod = "cash_on_delivery" | "mobile_money";
+type Provider = "mtn" | "airtel";
 
 const DELIVERY_FEE = 5000;
 
@@ -27,218 +34,347 @@ function formatPrice(value: number) {
   }).format(value);
 }
 
-export default function CartPage() {
+export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  const [customerName, setCustomerName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>("cash_on_delivery");
+  const [provider, setProvider] = useState<Provider>("mtn");
+  const [paymentPhone, setPaymentPhone] = useState("");
+
+  const [submitting, setSubmitting] = useState(false);
+  const [receipt, setReceipt] = useState<any>(null);
 
   useEffect(() => {
     setCartItems(getCartItems());
   }, []);
 
   const subtotal = useMemo(
-    () => cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
-    [cartItems]
+    () =>
+      cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
+    [cartItems],
   );
 
   const deliveryFee = cartItems.length > 0 ? DELIVERY_FEE : 0;
   const total = subtotal + deliveryFee;
 
-  function increaseQuantity(id: number) {
-    setCartItems((items) => {
-      const updated = items.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      );
+  async function handlePlaceOrder() {
+    if (!customerName || !phone) {
+      toast.error("Please enter your name and phone number.");
+      return;
+    }
 
-      saveCartItems(updated);
-      return updated;
-    });
+    if (cartItems.length === 0) {
+      toast.error("Your cart is empty.");
+      return;
+    }
+
+    if (paymentMethod === "mobile_money" && !paymentPhone) {
+      toast.error("Please enter the mobile money payment phone number.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const result = await createPublicOrder({
+        customer_name: customerName,
+        phone,
+        email,
+        delivery_address: deliveryAddress,
+        notes,
+        payment_method: paymentMethod,
+        mobile_money_provider:
+          paymentMethod === "mobile_money" ? provider : undefined,
+        payment_phone:
+          paymentMethod === "mobile_money" ? paymentPhone : undefined,
+        items: cartItems.map((item) => ({
+          product_id: item.id,
+          quantity: item.quantity,
+        })),
+      });
+
+      setReceipt(result.data);
+      clearCart();
+      setCartItems([]);
+      toast.success("Order placed successfully.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Order failed.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  function decreaseQuantity(id: number) {
-    setCartItems((items) => {
-      const updated = items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
-          : item
-      );
+  function downloadReceipt() {
+    if (!receipt) return;
 
-      saveCartItems(updated);
-      return updated;
+    const receiptText = `
+RESTAURANT ORDER RECEIPT
+Receipt No: ${receipt.receipt_number}
+Order ID: ${receipt.id}
+Customer: ${customerName}
+Phone: ${phone}
+Payment Method: ${receipt.payment_method}
+Payment Status: ${receipt.payment_status}
+Total: ${formatPrice(Number(receipt.total_amount))}
+
+Items:
+${receipt.items
+  ?.map(
+    (item: any) =>
+      `- ${item.product_name} x${item.quantity} — ${formatPrice(
+        Number(item.line_total),
+      )}`,
+  )
+  .join("\n")}
+`;
+
+    const blob = new Blob([receiptText], {
+      type: "text/plain;charset=utf-8",
     });
-  }
 
-  function removeItem(id: number) {
-    const updated = removeCartItem(id);
-    setCartItems(updated);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `${receipt.receipt_number}.txt`;
+    link.click();
+
+    URL.revokeObjectURL(url);
   }
 
   return (
     <main className="bg-[#fff7ed]">
       <Navbar />
 
-      <section className="mx-auto max-w-7xl px-4 pb-12 mt-24 sm:px-6 sm:pb-16 lg:px-8 lg:pt-36">
+      <section className="mx-auto max-w-7xl px-4 pt-24 pb-10 sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
         <Button
           asChild
           variant="ghost"
-          className="mb-6 rounded-full px-0 font-bold text-stone-600 hover:bg-transparent hover:text-red-600 sm:px-4"
+          className="mb-8 rounded-full font-bold text-stone-600 hover:bg-orange-100 hover:text-red-600"
         >
-          <Link href="/menu">
+          <Link href="/cart">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Continue Ordering
+            Back to Cart
           </Link>
         </Button>
 
-        <div className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-[0.25em] text-orange-500 sm:text-sm sm:tracking-[0.3em]">
-            Guest Checkout
+        <div className="mb-10">
+          <p className="text-sm font-bold uppercase tracking-[0.3em] text-orange-500">
+            Secure Guest Checkout
           </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl lg:text-5xl">
-            Complete Your Order
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-stone-950 sm:text-5xl">
+            Confirm Your Order
           </h1>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px]">
-          <div className="space-y-4">
-            {cartItems.length === 0 ? (
-              <div className="rounded-[1.5rem] border border-orange-100 bg-white p-6 text-center sm:rounded-[2rem] sm:p-10">
-                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-orange-50 text-red-600">
-                  <ShoppingBag className="h-7 w-7" />
+        {receipt && (
+          <Card className="mb-8 rounded-[2rem] border-green-100 bg-white">
+            <CardContent className="p-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <p className="font-bold">Order placed successfully</p>
+                  </div>
+
+                  <h2 className="mt-2 text-2xl font-bold text-stone-950">
+                    Receipt: {receipt.receipt_number}
+                  </h2>
+
+                  <p className="mt-1 text-sm text-stone-500">
+                    Download your receipt for reference. Your order is pending
+                    restaurant confirmation.
+                  </p>
                 </div>
 
-                <h3 className="mt-4 text-xl font-bold text-stone-950">
-                  Your cart is empty
-                </h3>
-
-                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-stone-500">
-                  Add some delicious meals to your cart before proceeding to
-                  checkout.
-                </p>
-
                 <Button
-                  asChild
-                  className="mt-5 h-11 rounded-full bg-red-600 px-6 font-bold text-white hover:bg-red-700"
+                  onClick={downloadReceipt}
+                  className="w-full rounded-full bg-stone-950 px-6 text-white hover:bg-red-600 md:w-auto"
                 >
-                  <Link href="/menu">Browse Menu</Link>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Receipt
                 </Button>
               </div>
-            ) : (
-              cartItems.map((item) => (
-                <Card
-                  key={item.id}
-                  className="rounded-[1.5rem] border border-orange-100 bg-white py-0 shadow-sm sm:rounded-[2rem]"
-                >
-                  <CardContent className="grid gap-4 p-4 sm:grid-cols-[100px_1fr_auto] sm:items-center sm:p-5">
-                    <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-orange-50 sm:w-[100px]">
-                      <Image
-                        src={getImageUrl(item.image) || "/placeholder-food.jpg"}
-                        alt={item.name}
-                        fill
-                        unoptimized
-                        sizes="100px"
-                        className="object-cover"
-                      />
-                    </div>
+            </CardContent>
+          </Card>
+        )}
 
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-orange-500">
-                        {item.category}
+        <div className="grid gap-8 lg:grid-cols-[1fr_420px]">
+          <Card className="rounded-[2rem] bg-white">
+            <CardContent className="space-y-6 p-6">
+              <h2 className="text-2xl font-bold text-stone-950">
+                Customer Details
+              </h2>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Full name"
+                  className="h-[52px] rounded-full border-orange-100 bg-orange-50 px-5"
+                />
+
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Phone number"
+                  className="h-[52px] rounded-full border-orange-100 bg-orange-50 px-5"
+                />
+
+                <Input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email optional"
+                  className="h-[52px] rounded-full border-orange-100 bg-orange-50 px-5"
+                />
+
+                <Input
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  placeholder="Delivery address optional"
+                  className="h-[52px] rounded-full border-orange-100 bg-orange-50 px-5"
+                />
+              </div>
+
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Order notes optional"
+                className="min-h-28 w-full rounded-[1.5rem] border border-orange-100 bg-orange-50 px-5 py-4 text-sm outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
+              />
+
+              <div className="border-t border-orange-100 pt-6">
+                <h2 className="text-2xl font-bold text-stone-950">
+                  Payment Method
+                </h2>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Select
+                    value={paymentMethod}
+                    onValueChange={(value: PaymentMethod) =>
+                      setPaymentMethod(value)
+                    }
+                  >
+                    <SelectTrigger className="min-h-[52px] w-full pl-4 rounded-full border-orange-100 bg-orange-50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="p-2">
+                      <SelectItem value="cash_on_delivery">
+                        Cash on Delivery
+                      </SelectItem>
+                      <SelectItem value="mobile_money">Mobile Money</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {paymentMethod === "mobile_money" && (
+                    <Select
+                      value={provider}
+                      onValueChange={(value: Provider) => setProvider(value)}
+                    >
+                      <SelectTrigger className="min-h-[52px] w-full rounded-full border-orange-100 bg-orange-50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="p-2">
+                        <SelectItem value="mtn">MTN Mobile Money</SelectItem>
+                        <SelectItem value="airtel">Airtel Money</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+
+                {paymentMethod === "mobile_money" && (
+                  <div className="mt-4 space-y-4 rounded-[2rem] bg-orange-50 p-5">
+                    <Input
+                      value={paymentPhone}
+                      onChange={(e) => setPaymentPhone(e.target.value)}
+                      placeholder="Mobile money phone number"
+                      className="h-[52px] rounded-full border-orange-100 bg-white px-5"
+                    />
+
+                    <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-stone-600">
+                      <p className="font-bold text-stone-950">
+                        Payment Instructions
                       </p>
-
-                      <h2 className="mt-1 line-clamp-1 text-base font-bold text-stone-950 sm:text-lg">
-                        {item.name}
-                      </h2>
-
-                      <p className="mt-1 line-clamp-2 text-xs leading-5 text-stone-500 sm:text-sm">
-                        {item.description}
-                      </p>
-
-                      <p className="mt-2 text-base font-bold text-red-600 sm:text-lg">
-                        {formatPrice(item.price)}
+                      <p className="mt-2">
+                        After placing your order, complete payment using your
+                        selected mobile money provider. Your order will remain
+                        pending until payment is confirmed by the restaurant.
                       </p>
                     </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-                    <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => removeItem(item.id)}
-                        className="h-8 w-8 rounded-full text-stone-400 hover:bg-red-50 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-
-                      <div className="flex items-center rounded-full border border-orange-100 bg-orange-50 px-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => decreaseQuantity(item.id)}
-                          className="h-8 w-8 rounded-full hover:bg-white"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-
-                        <span className="w-8 text-center text-sm font-bold text-stone-950">
-                          {item.quantity}
-                        </span>
-
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => increaseQuantity(item.id)}
-                          className="h-8 w-8 rounded-full hover:bg-white"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-
-          <Card className="h-fit rounded-[1.5rem] border border-orange-100 bg-white sm:rounded-[2rem] lg:sticky lg:top-24">
-            <CardContent className="p-5 sm:p-6">
-              <h2 className="text-xl font-bold text-stone-950 sm:text-2xl">
+          <Card className="h-fit rounded-[2rem] bg-white lg:sticky lg:top-24">
+            <CardContent className="space-y-5 p-6">
+              <h2 className="text-2xl font-bold text-stone-950">
                 Order Summary
               </h2>
 
-              <div className="mt-5 space-y-3 text-sm">
-                <div className="flex justify-between font-bold text-stone-500">
+              <div className="space-y-3">
+                {cartItems.length > 0 ? (
+                  cartItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-start justify-between gap-4 rounded-2xl bg-orange-50 p-3 text-sm"
+                    >
+                      <div>
+                        <p className="font-bold text-stone-950">{item.name}</p>
+                        <p className="text-stone-500">Qty: {item.quantity}</p>
+                      </div>
+                      <p className="shrink-0 font-bold text-red-600">
+                        {formatPrice(item.price * item.quantity)}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="rounded-2xl bg-orange-50 p-4 text-sm text-stone-500">
+                    Your cart is empty.
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-4 border-t border-orange-100 pt-5">
+                <div className="flex justify-between text-sm font-bold text-stone-500">
                   <span>Subtotal</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
 
-                <div className="flex justify-between font-bold text-stone-500">
+                <div className="flex justify-between text-sm font-bold text-stone-500">
                   <span>Delivery</span>
                   <span>{formatPrice(deliveryFee)}</span>
                 </div>
 
-                <div className="border-t border-orange-100 pt-4">
-                  <div className="flex justify-between">
-                    <span className="text-base font-bold text-stone-950 sm:text-lg">
-                      Total
-                    </span>
-                    <span className="text-xl font-bold text-red-600 sm:text-2xl">
-                      {formatPrice(total)}
-                    </span>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-lg font-bold text-stone-950">
+                    Total
+                  </span>
+                  <span className="text-2xl font-bold text-red-600">
+                    {formatPrice(total)}
+                  </span>
                 </div>
               </div>
 
               <Button
-                asChild
-                disabled={cartItems.length === 0}
-                className="mt-6 h-11 w-full rounded-full bg-red-600 text-sm font-bold text-white shadow-xl shadow-red-600/20 hover:bg-red-700 disabled:pointer-events-none disabled:opacity-50 sm:h-12"
+                disabled={submitting || cartItems.length === 0}
+                onClick={handlePlaceOrder}
+                className="h-[52px] w-full rounded-full bg-red-600 text-base font-bold text-white shadow-xl shadow-red-600/20 hover:bg-red-700"
               >
-                <Link href="/checkout">
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  Proceed to Checkout
-                </Link>
+                <ShoppingBag className="mr-2 h-5 w-5" />
+                {submitting ? "Placing Order..." : "Place Order"}
               </Button>
 
-              <p className="mt-4 text-center text-xs font-medium leading-6 text-stone-400">
-                Review your cart, then continue to checkout to add delivery and
-                payment details.
+              <p className="text-center text-xs font-medium leading-6 text-stone-400">
+                No account required. Receipt is available after ordering.
               </p>
             </CardContent>
           </Card>
